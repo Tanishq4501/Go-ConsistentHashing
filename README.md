@@ -38,7 +38,7 @@ where `N` is the number of servers.
 
 When servers are added or removed, the modulo operation changes, causing **massive key redistribution**:
 
-![Rehashing Problem](screenshots/figure-1.svg)
+![Rehashing Problem](screenshots/figure-1.png)
 
 **Impact of removing one server:**
 
@@ -46,7 +46,7 @@ When servers are added or removed, the modulo operation changes, causing **massi
 
 As shown above, when `server 1` goes offline and we recalculate using `hash % 3` instead of `hash % 4`, **most keys get remapped** to different servers, not just the keys from the failed server.
 
-![Server Removal Impact](screenshots/figure-2.svg)
+![Server Removal Impact](screenshots/figure-2.png)
 
 This causes a **cache miss storm**, overwhelming the remaining servers and potentially cascading the failure.
 
@@ -60,37 +60,37 @@ This causes a **cache miss storm**, overwhelming the remaining servers and poten
 
 Instead of using modulo operation, consistent hashing maps both servers and keys onto a **circular hash space** (hash ring).
 
-![Hash Space](screenshots/figure-3.svg)
+![Hash Space](screenshots/figure-3.png)
 
 The hash space forms a ring by connecting both ends:
 
-![Hash Ring](screenshots/04.svg)
+![Hash Ring](screenshots/figure-4.png)
 
 ### How It Works
 
 **1. Map servers onto the ring:**
 
-![Server Mapping](screenshots/figure-5.svg)
+![Server Mapping](screenshots/figure-5.png)
 
 **2. Map keys onto the ring:**
 
-![Key Mapping](screenshots/figure-6.svg)
+![Key Mapping](screenshots/figure-6.png)
 
 **3. Locate keys by going clockwise to the first server:**
 
-![Key Lookup](screenshots/figure-7.svg)
+![Key Lookup](screenshots/figure-7.png)
 
 ### Advantages During Scaling
 
 **Adding a server** only affects a small fraction of keys:
 
-![Adding Server](screenshots/figure-8.svg)
+![Adding Server](screenshots/figure-8.png)
 
 Only `key0` needs redistribution when `server 4` is added.
 
 **Removing a server** also minimizes disruption:
 
-![Removing Server](screenshots/figure-9.svg)
+![Removing Server](screenshots/figure-9.png)
 
 Only `key1` needs remapping when `server 1` is removed.
 
@@ -134,11 +134,11 @@ go-hash/
 ❌ **Uneven load distribution** - servers can get very different amounts of data
 ❌ **Partition imbalance** - some servers responsible for much larger hash ranges
 
-![Uneven Distribution Problem](screenshots/figure-10.svg)
+![Uneven Distribution Problem](screenshots/figure-10.png)
 
 In this scenario, if `s1` is removed, `s2` gets double the partition size of `s0` and `s3`.
 
-![Clustering Problem](screenshots/figure-11.svg)
+![Clustering Problem](screenshots/figure-11.png)
 
 Servers can cluster together, leaving some with no data at all.
 
@@ -159,11 +159,11 @@ Servers can cluster together, leaving some with no data at all.
 ✅ **Solves uneven distribution** from Basic Hashing
 ✅ More balanced load across servers
 
-![Virtual Nodes Concept](screenshots/figure-12.svg)
+![Virtual Nodes Concept](screenshots/figure-12.png)
 
 Each server (`s0`, `s1`) is represented by multiple virtual nodes (`s0_0`, `s0_1`, `s0_2`, etc.), spreading responsibility across the ring.
 
-![Virtual Node Lookup](screenshots/figure-13.svg)
+![Virtual Node Lookup](screenshots/figure-13.png)
 
 Keys are mapped to virtual nodes, which reference back to physical servers.
 
@@ -214,13 +214,13 @@ Keys are mapped to virtual nodes, which reference back to physical servers.
 
 **When adding a server:**
 
-![Adding Server with Redundancy](screenshots/figure-14.svg)
+![Adding Server with Redundancy](screenshots/figure-14.png)
 
 Keys between `s3` and `s4` are affected and redistributed.
 
 **When removing a server:**
 
-![Removing Server with Redundancy](screenshots/figure-15.svg)
+![Removing Server with Redundancy](screenshots/figure-15.png)
 
 Keys between `s0` and `s1` need redistribution to maintain replication factor.
 
